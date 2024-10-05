@@ -4,3 +4,4 @@ build
 .cache
 
 *.o
+.ipynb_checkpoints
