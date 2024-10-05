@@ -1,4 +1,3 @@
-
 #include <clickhouse/client.h>
 
 #include <iostream>
