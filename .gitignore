@@ -2,6 +2,9 @@
 
 build
 .cache
+.venv
 
 *.o
 .ipynb_checkpoints
+.ropeproject
+sample_database
