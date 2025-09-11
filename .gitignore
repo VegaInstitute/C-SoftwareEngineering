@@ -1,0 +1,11 @@
+# macOS files
+.DS_Store
+
+# CMake files
+build/*
+
+# C++ files
+
+
+# Python files
+__pycache__/*
