@@ -6,6 +6,8 @@ build/*
 
 # C++ files
 
+# clang files
+.cache/*
 
 # Python files
 __pycache__/*
