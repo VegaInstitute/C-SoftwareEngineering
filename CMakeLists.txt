@@ -1,14 +1,15 @@
 cmake_minimum_required(VERSION 3.20)
-project(CPPForQuantFinance LANGUAGES CXX)
+project("Software Engineering and C++ for Quantitative Analysis and Algorithmic Trading - Backtester" LANGUAGES CXX)
 
 option(BUILD_EXAMPLES "Build example CLI apps" ON)
+option(BUILD_DOCS "Build API docs with Doxygen" ON) # requires Doxygen installation (e.g. `brew install doxygen graphviz` for macOS)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-add_library(libbacktester src/libbacktester/orderbook.cpp)
+add_library(libbacktester src/libbacktester/orderbook.cpp src/libbacktester/strategies/twap_strategy.cpp)
 target_include_directories(libbacktester PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 if (BUILD_EXAMPLES)
@@ -17,6 +18,23 @@ if (BUILD_EXAMPLES)
   )
   target_link_libraries(demo_order_book PRIVATE libbacktester)
 endif()
+
+
+if (BUILD_DOCS)
+  find_package(Doxygen REQUIRED dot OPTIONAL_COMPONENTS mscgen dia)
+  set(DOXYGEN_PROJECT_NAME "${PROJECT_NAME}")
+  set(DOXYGEN_PROJECT_NUMBER "${PROJECT_VERSION}")
+  set(DOXYGEN_GENERATE_HTML YES)
+  set(DOXYGEN_GENERATE_LATEX NO)
+  set(DOXYGEN_EXTRACT_ALL YES)
+  set(DOXYGEN_BUILTIN_STL_SUPPORT YES)
+  set(DOXYGEN_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/docs")
+  doxygen_add_docs(docs
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+  )
+endif()
+
 
 include(CTest)
 enable_testing()
@@ -29,6 +47,14 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(googletest)
 
-add_executable(test_orderbook tests/test_orderbook.cpp)
+add_executable(test_orderbook
+    tests/test_orderbook.cpp
+)
 target_link_libraries(test_orderbook PRIVATE libbacktester gtest_main)
 add_test(NAME test_orderbook COMMAND test_orderbook)
+
+add_executable(test_twap
+  tests/test_twap.cpp
+)
+target_link_libraries(test_twap PRIVATE libbacktester GTest::gtest_main)
+add_test(NAME test_twap COMMAND test_twap)
