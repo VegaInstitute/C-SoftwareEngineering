@@ -1,10 +1,10 @@
 # macOS files
 .DS_Store
 
-# CMake files
+# CMake and libbacktester files
 build/*
-
-# C++ files
+*.o
+*.csv
 
 # clang files
 .cache/*

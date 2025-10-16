@@ -1,7 +1,6 @@
 #include "libbacktester/strategies/twap_strategy.hpp"
 
 #include <cassert>
-#include <limits>
 #include <stdexcept>
 #include <utility>
 

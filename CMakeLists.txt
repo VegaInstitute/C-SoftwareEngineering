@@ -9,27 +9,40 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-add_library(libbacktester src/libbacktester/orderbook.cpp src/libbacktester/strategies/twap_strategy.cpp)
+add_library(libbacktester
+    src/libbacktester/orderbook.cpp
+
+    src/libbacktester/strategies/twap_strategy.cpp
+
+    src/libbacktester/execution_simulator.cpp
+    src/libbacktester/metrics_writer.cpp
+    src/libbacktester/portfolio.cpp
+)
 target_include_directories(libbacktester PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 if (BUILD_EXAMPLES)
-  add_executable(demo_order_book
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/app/demo_order_book.cpp"
-  )
-  target_link_libraries(demo_order_book PRIVATE libbacktester)
+    add_executable(demo_order_book
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/app/demo_order_book.cpp"
+    )
+    target_link_libraries(demo_order_book PRIVATE libbacktester)
+
+    add_executable(demo_portfolio_execution
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/app/demo_portfolio_execution.cpp"
+    )
+    target_link_libraries(demo_portfolio_execution PRIVATE libbacktester)
 endif()
 
 
 if (BUILD_DOCS)
-  find_package(Doxygen REQUIRED dot OPTIONAL_COMPONENTS mscgen dia)
-  set(DOXYGEN_PROJECT_NAME "${PROJECT_NAME}")
-  set(DOXYGEN_PROJECT_NUMBER "${PROJECT_VERSION}")
-  set(DOXYGEN_GENERATE_HTML YES)
-  set(DOXYGEN_GENERATE_LATEX NO)
-  set(DOXYGEN_EXTRACT_ALL YES)
-  set(DOXYGEN_BUILTIN_STL_SUPPORT YES)
-  set(DOXYGEN_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/docs")
-  doxygen_add_docs(docs
+    find_package(Doxygen REQUIRED dot OPTIONAL_COMPONENTS mscgen dia)
+    set(DOXYGEN_PROJECT_NAME "${PROJECT_NAME}")
+    set(DOXYGEN_PROJECT_NUMBER "${PROJECT_VERSION}")
+    set(DOXYGEN_GENERATE_HTML YES)
+    set(DOXYGEN_GENERATE_LATEX NO)
+    set(DOXYGEN_EXTRACT_ALL YES)
+    set(DOXYGEN_BUILTIN_STL_SUPPORT YES)
+    set(DOXYGEN_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/docs")
+    doxygen_add_docs(docs
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/src
   )
@@ -58,3 +71,16 @@ add_executable(test_twap
 )
 target_link_libraries(test_twap PRIVATE libbacktester GTest::gtest_main)
 add_test(NAME test_twap COMMAND test_twap)
+
+add_executable(test_portfolio_execution
+  tests/test_execution_simulator.cpp
+  tests/test_portfolio.cpp
+)
+target_link_libraries(test_portfolio_execution PRIVATE libbacktester GTest::gtest_main)
+add_test(NAME test_portfolio_execution COMMAND test_portfolio_execution)
+
+add_executable(test_metrics
+  tests/test_metrics_writer.cpp
+)
+target_link_libraries(test_metrics PRIVATE libbacktester GTest::gtest_main)
+add_test(NAME test_metrics COMMAND test_metrics)
