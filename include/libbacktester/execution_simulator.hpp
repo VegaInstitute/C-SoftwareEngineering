@@ -10,8 +10,11 @@
 
 namespace libbacktester {
 
-/**
- * @file execution_simulator.hpp
+class Portfolio;      // fwd
+class MetricsWriter;  // fwd
+
+/* @class ExecutionSimulator
+ *
  * @brief Deterministic top-of-book execution simulator (single-threaded, C++20).
  *
  * Business rules:
@@ -26,9 +29,6 @@ namespace libbacktester {
  *  2) Portfolio::onFill(fill)
  *  3) MetricsWriter::recordTrade(fill)
  */
-class Portfolio;      // fwd
-class MetricsWriter;  // fwd
-
 class ExecutionSimulator {
  public:
   /**

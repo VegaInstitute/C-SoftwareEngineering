@@ -67,3 +67,12 @@ class OrderBookL3 {
 	•	Public methods forward to pimpl_->… implementations.
 	•	Benefits: hides implementation, reduces recompilation dependencies, maintains ABI stability.
 	•	Downsides: pointer indirection, extra boilerplate.
+
+# Seminar 07
+| Class name         | Responsibility                  |
+|     ---            |      ---                        |
+| OrderBookL3        | Existing limit order storage    |
+| Strategy           | Our behaviour                   |
+| ExecutionSimulator | Intents to orders               |
+| Portfolio          | Position and PnL tracking       |
+| MetricsWriter      | Self-explanatory                |

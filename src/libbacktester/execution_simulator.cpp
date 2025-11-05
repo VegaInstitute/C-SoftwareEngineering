@@ -1,9 +1,8 @@
-#include "libbacktester/execution_simulator.hpp"
-
 #include <cassert>
 
 #include "libbacktester/metrics_writer.hpp"
 #include "libbacktester/portfolio.hpp"
+#include "libbacktester/execution_simulator.hpp"
 
 namespace libbacktester {
 

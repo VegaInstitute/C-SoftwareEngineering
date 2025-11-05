@@ -9,10 +9,10 @@ int main(int argc, char* argv[]) {
   std::string ticker = argv[1];
   std::string csvfile = argv[2];
 
-  backtester::OrderBookL3 ob(ticker);
+  libbacktester::OrderBookL3 ob(ticker);
 
   try {
-    ob.LoadCsv(csvfile);
+    ob.loadCsv(csvfile);
   } catch (const std::exception& ex) {
     std::cerr << "Error loading CSV: " << ex.what() << "\n";
     return 1;
@@ -32,14 +32,14 @@ int main(int argc, char* argv[]) {
   }
 
   std::cout << "Bid side levels:\n";
-  ob.ForEachLevel(backtester::OrderBookL3::Side::kBid,
-                  [&](const backtester::OrderBookL3::Level& lvl) {
+  ob.forEachLevel(libbacktester::OrderBookL3::Side::kBid,
+                  [&](const libbacktester::OrderBookL3::Level& lvl) {
     std::cout << "  " << lvl.price << " → " << lvl.agg_qty
               << " (count=" << lvl.count << ")\n";
   });
   std::cout << "Ask side levels:\n";
-  ob.ForEachLevel(backtester::OrderBookL3::Side::kAsk,
-                  [&](const backtester::OrderBookL3::Level& lvl) {
+  ob.forEachLevel(libbacktester::OrderBookL3::Side::kAsk,
+                  [&](const libbacktester::OrderBookL3::Level& lvl) {
     std::cout << "  " << lvl.price << " → " << lvl.agg_qty
               << " (count=" << lvl.count << ")\n";
   });

@@ -1,5 +1,5 @@
-#ifndef BACKTESTER_ORDERBOOK_L3_H_
-#define BACKTESTER_ORDERBOOK_L3_H_
+#ifndef LIBBACKTESTER_ORDERBOOK_L3_HPP_
+#define LIBBACKTESTER_ORDERBOOK_L3_HPP_
 
 #include <cstdint>
 #include <functional>
@@ -12,28 +12,27 @@
 #include <unordered_set>
 #include <vector>
 
-namespace backtester {
+namespace libbacktester {
 
-// Single-instrument L3 order book for MOEX-like ORDLOG (Type A).
 class OrderBookL3 {
- public:
+  public:
   enum class Action : std::uint8_t { kAdd, kCancel, kTrade, kReplace, kUnknown };
   enum class Side   : std::uint8_t { kBid, kAsk };
 
   struct OrderKey {
-    std::string  order_id;
-    Side         side{Side::kBid};
-    double       price{0.0};
-    std::int64_t qty{0};
-    std::int64_t ts_ms{0};
+    std::string   order_id;
+    Side          side{Side::kBid};
+    double        price{0.0};
+    std::int64_t  qty{0};
+    std::int64_t  ts_ms{0};
     std::uint64_t seq{0};
   };
 
   struct Trade {
-    std::string  trade_id;
-    double       price{0.0};
-    std::int64_t qty{0};
-    std::int64_t ts_ms{0};
+    std::string   trade_id;
+    double        price{0.0};
+    std::int64_t  qty{0};
+    std::int64_t  ts_ms{0};
     std::uint64_t seq{0};
   };
 
@@ -51,30 +50,30 @@ class OrderBookL3 {
   OrderBookL3(OrderBookL3&&) noexcept        = default;
   OrderBookL3& operator=(OrderBookL3&&) noexcept = default;
 
-  // Process one decoded event. On trades, reductions ALWAYS occur;
-  // duplicate trade rows are suppressed only for emission (by TRADENO).
-  std::optional<Trade> OnRecord(const OrderKey& rec,
+  // Process one decoded event. For Action::kTrade, reductions ALWAYS occur.
+  // Duplicate trade rows are suppressed for emission only (dedup by trade_id).
+  std::optional<Trade> onRecord(const OrderKey& rec,
                                 Action action,
                                 const std::string* trade_id = nullptr);
 
-  // Load a MOEX-style CSV and ingest only rows for this book's ticker.
-  void LoadCsv(const std::string& filepath);
+  // DEPRECATED. Load a MOEX-style CSV and ingest only rows for this book's ticker.
+  [[deprecated("The functionality is implemented in the SimulationCore class.")]] void loadCsv(const std::string& filepath);
 
-  // Top-of-book helpers.
+  // Top-of-book.
   std::optional<Level> bestBid() const;
   std::optional<Level> bestAsk() const;
 
   // Depth iteration (bids: high->low, asks: low->high).
-  void ForEachLevel(Side side, const std::function<void(const Level&)>& fn) const;
+  void forEachLevel(Side side, const std::function<void(const Level&)>& fn) const;
 
   // Remaining open quantity of a known order id (0 if absent).
   std::int64_t openQty(const std::string& order_id) const;
 
- private:
+private:
   struct BookOrder {
-    std::string  order_id;
-    std::int64_t qty{0};
-    std::int64_t ts_ms{0};
+    std::string   order_id;
+    std::int64_t  qty{0};
+    std::int64_t  ts_ms{0};
     std::uint64_t seq{0};
   };
   using PriceLevel = std::list<BookOrder>;
@@ -94,23 +93,23 @@ class OrderBookL3 {
   std::uint64_t                                seq_counter_{1};
 
   // CSV helpers
-  static std::string_view Trim(std::string_view s);
-  static std::string NormalizeId(std::string_view s);  // trim + strip leading zeros
-  static std::vector<std::string_view> SplitLine(std::string_view line, char delim);
-  static std::unordered_map<std::string, int>
-      BuildHeaderIndex(const std::vector<std::string_view>& hdrs);
+  static std::string_view trim(std::string_view s);
+  static std::string normalizeId(std::string_view s);  // trim + strip leading zeros
+  static bool isZeroLikeId(std::string_view s);        // "", "0", "0000", ...
+  static std::vector<std::string_view> splitLine(std::string_view line, char delim);
+  static std::unordered_map<std::string, int> buildHeaderIndex(const std::vector<std::string_view>& hdrs);
 
   // Book ops
-  void AddOrder(const OrderKey& rec);
-  void CancelOrder(const std::string& order_id);
-  void ReduceOrder(const std::string& order_id, std::int64_t qty);
+  void addOrder(const OrderKey& rec);
+  void cancelOrder(const std::string& order_id);
+  void cancelAll(Side side);  // blanket side cancel
+  void reduceOrder(const std::string& order_id, std::int64_t qty);
 
   // Queries
-  std::optional<Level> BestFromBook(const std::map<double, PriceLevel>& book,
+  std::optional<Level> bestFromBook(const std::map<double, PriceLevel>& book,
                                     bool highest) const;
-  void AccumulateLevel(const PriceLevel& lvl, Level& out) const;
+  void accumulateLevel(const PriceLevel& lvl, Level& out) const;
 };
 
-} // namespace backtester
-
-#endif // BACKTESTER_ORDERBOOK_L3_H_
+} // namespace libbacktester
+#endif // LIBBACKTESTER_ORDERBOOK_L3_HPP_

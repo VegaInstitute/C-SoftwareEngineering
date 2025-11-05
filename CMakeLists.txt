@@ -6,6 +6,7 @@ option(BUILD_DOCS "Build API docs with Doxygen" ON) # requires Doxygen installat
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_LOCAL_FLAGS -O3)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -17,14 +18,18 @@ add_library(libbacktester
     src/libbacktester/execution_simulator.cpp
     src/libbacktester/metrics_writer.cpp
     src/libbacktester/portfolio.cpp
+
+    src/libbacktester/simulation_core.cpp
 )
 target_include_directories(libbacktester PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_compile_options(libbacktester PRIVATE -Wall -Wextra -Wpedantic ${CMAKE_CXX_LOCAL_FLAGS})
 
 if (BUILD_EXAMPLES)
     add_executable(demo_order_book
         "${CMAKE_CURRENT_SOURCE_DIR}/src/app/demo_order_book.cpp"
     )
     target_link_libraries(demo_order_book PRIVATE libbacktester)
+    target_compile_options(demo_order_book PRIVATE ${CMAKE_CXX_LOCAL_FLAGS})
 
     add_executable(demo_portfolio_execution
         "${CMAKE_CURRENT_SOURCE_DIR}/src/app/demo_portfolio_execution.cpp"
@@ -43,9 +48,9 @@ if (BUILD_DOCS)
     set(DOXYGEN_BUILTIN_STL_SUPPORT YES)
     set(DOXYGEN_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/docs")
     doxygen_add_docs(docs
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/src
-  )
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
+    )
 endif()
 
 
@@ -84,3 +89,10 @@ add_executable(test_metrics
 )
 target_link_libraries(test_metrics PRIVATE libbacktester GTest::gtest_main)
 add_test(NAME test_metrics COMMAND test_metrics)
+
+
+add_executable(test_simulation_core
+  tests/test_simulation_core.cpp
+)
+target_link_libraries(test_simulation_core PRIVATE libbacktester GTest::gtest_main)
+add_test(NAME simulation_core_tests COMMAND test_simulation_core)

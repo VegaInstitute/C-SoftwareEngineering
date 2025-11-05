@@ -20,8 +20,8 @@ TEST(OrderBookL3Test, AddAndBest) {
       "1,FOO,B,1000,1,1,10.00,100,,\n"
       "2,FOO,S,1000,2,1,11.00,200,,\n";
 
-  backtester::OrderBookL3 ob("FOO");
-  ob.LoadCsv(WriteCsv("ob_add_best.csv", csv));
+  libbacktester::OrderBookL3 ob("FOO");
+  ob.loadCsv(WriteCsv("ob_add_best.csv", csv));
 
   auto bb = ob.bestBid();
   ASSERT_TRUE(bb.has_value());
@@ -45,8 +45,8 @@ TEST(OrderBookL3Test, CancelRemovesAndPrunesLevel) {
       "4,FOO,B,1003,2,0,0,,,\n"      // ignored
       "5,FOO,B,1004,0,0,0,0,,\n";    // ACTION=0 cancel order #1
 
-  backtester::OrderBookL3 ob("FOO");
-  ob.LoadCsv(WriteCsv("ob_cancel.csv", csv));
+  libbacktester::OrderBookL3 ob("FOO");
+  ob.loadCsv(WriteCsv("ob_cancel.csv", csv));
 
   // After cancel, bid side empty.
   EXPECT_FALSE(ob.bestBid().has_value());
@@ -64,8 +64,8 @@ TEST(OrderBookL3Test, TradeTwoRowsFullFill) {
       "3,FOO,B,1001,1,2,10.00,100,9001,10.00\n"
       "4,FOO,S,1001,2,2,10.00,100,9001,10.00\n";
 
-  backtester::OrderBookL3 ob("FOO");
-  ob.LoadCsv(WriteCsv("ob_trade_full.csv", csv));
+  libbacktester::OrderBookL3 ob("FOO");
+  ob.loadCsv(WriteCsv("ob_trade_full.csv", csv));
 
   EXPECT_FALSE(ob.bestBid().has_value());
   EXPECT_FALSE(ob.bestAsk().has_value());
@@ -86,8 +86,8 @@ TEST(OrderBookL3Test, TradePartialThenFinish) {
       "6,FOO,B,1003,1,2,10.00,50,9101,10.00\n"
       "7,FOO,S,1003,3,2,10.00,50,9101,10.00\n";
 
-  backtester::OrderBookL3 ob("FOO");
-  ob.LoadCsv(WriteCsv("ob_trade_partial.csv", csv));
+  libbacktester::OrderBookL3 ob("FOO");
+  ob.loadCsv(WriteCsv("ob_trade_partial.csv", csv));
 
   // All cleared
   EXPECT_EQ(ob.openQty("1"), 0);
@@ -106,8 +106,8 @@ TEST(OrderBookL3Test, TradePriceFallbackWhenTRADEPRICEAbsent) {
       "3,FOO,B,1001,1,2,13.2415,200,777\n"
       "4,FOO,S,1001,2,2,13.2415,200,777\n";
 
-  backtester::OrderBookL3 ob("FOO");
-  ob.LoadCsv(WriteCsv("ob_trade_fallback.csv", csv));
+  libbacktester::OrderBookL3 ob("FOO");
+  ob.loadCsv(WriteCsv("ob_trade_fallback.csv", csv));
 
   EXPECT_FALSE(ob.bestBid().has_value());
   EXPECT_FALSE(ob.bestAsk().has_value());
@@ -123,8 +123,8 @@ TEST(OrderBookL3Test, SkimSingleTickerOnly) {
       "3,BAR,S,1000,20,1,12.00,100,,\n"    // different ticker
       "4,FOO,S,1000,2,1,11.00,100,,\n";
 
-  backtester::OrderBookL3 ob("FOO");
-  ob.LoadCsv(WriteCsv("ob_skim.csv", csv));
+  libbacktester::OrderBookL3 ob("FOO");
+  ob.loadCsv(WriteCsv("ob_skim.csv", csv));
 
   auto bb = ob.bestBid();
   ASSERT_TRUE(bb.has_value());
@@ -147,19 +147,19 @@ TEST(OrderBookL3Test, IterateDepthOrder) {
       "3,FOO,S,1000,3,1,11.0,30,,\n"
       "4,FOO,S,1000,4,1,12.0,40,,\n";
 
-  backtester::OrderBookL3 ob("FOO");
-  ob.LoadCsv(WriteCsv("ob_iter.csv", csv));
+  libbacktester::OrderBookL3 ob("FOO");
+  ob.loadCsv(WriteCsv("ob_iter.csv", csv));
 
   std::vector<double> bids;
-  ob.ForEachLevel(backtester::OrderBookL3::Side::kBid,
-      [&](const backtester::OrderBookL3::Level& lvl) { bids.push_back(lvl.price); });
+  ob.forEachLevel(libbacktester::OrderBookL3::Side::kBid,
+      [&](const libbacktester::OrderBookL3::Level& lvl) { bids.push_back(lvl.price); });
   ASSERT_EQ(bids.size(), 2u);
   EXPECT_DOUBLE_EQ(bids[0], 10.0);
   EXPECT_DOUBLE_EQ(bids[1], 9.0);
 
   std::vector<double> asks;
-  ob.ForEachLevel(backtester::OrderBookL3::Side::kAsk,
-      [&](const backtester::OrderBookL3::Level& lvl) { asks.push_back(lvl.price); });
+  ob.forEachLevel(libbacktester::OrderBookL3::Side::kAsk,
+      [&](const libbacktester::OrderBookL3::Level& lvl) { asks.push_back(lvl.price); });
   ASSERT_EQ(asks.size(), 2u);
   EXPECT_DOUBLE_EQ(asks[0], 11.0);
   EXPECT_DOUBLE_EQ(asks[1], 12.0);
@@ -175,8 +175,8 @@ TEST(OrderBookL3Test, OpenQtyAfterPartialFill) {
       "3,FOO,B,1001,1,2,10.00, 80,9900,10.00\n"// trade 80 both sides
       "4,FOO,S,1001,2,2,10.00, 80,9900,10.00\n";
 
-  backtester::OrderBookL3 ob("FOO");
-  ob.LoadCsv(WriteCsv("ob_openqty.csv", csv));
+  libbacktester::OrderBookL3 ob("FOO");
+  ob.loadCsv(WriteCsv("ob_openqty.csv", csv));
 
   // 120-80 = 40 remaining on order #1
   EXPECT_EQ(ob.openQty("1"), 40);
@@ -197,8 +197,8 @@ TEST(OrderBookL3Test, UnknownActionSkipped) {
       "4,FOO,S,1003,2,1,11.0,100,,,\n"     // add ask
       "5,FOO,B,1004,9,10.0,0,0,,,\n";      // ACTION=9 unknown
 
-  backtester::OrderBookL3 ob("FOO");
-  ob.LoadCsv(WriteCsv("ob_unknown_action.csv", csv));
+  libbacktester::OrderBookL3 ob("FOO");
+  ob.loadCsv(WriteCsv("ob_unknown_action.csv", csv));
 
   // Book should still reflect the two valid adds.
   EXPECT_TRUE(ob.bestBid().has_value());
@@ -213,8 +213,8 @@ TEST(OrderBookL3Test, CancelUnknownIsNoop) {
       "1,FOO,B,1000,1,1,10.0,100,,\n"
       "2,FOO,B,1001,999999,0,0,0,0,,\n";  // cancel unknown
 
-  backtester::OrderBookL3 ob("FOO");
-  ob.LoadCsv(WriteCsv("ob_cancel_unknown.csv", csv));
+  libbacktester::OrderBookL3 ob("FOO");
+  ob.loadCsv(WriteCsv("ob_cancel_unknown.csv", csv));
 
   auto bb = ob.bestBid();
   ASSERT_TRUE(bb.has_value());

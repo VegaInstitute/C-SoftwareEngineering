@@ -11,7 +11,7 @@
 namespace libbacktester {
 
 /**
- * @file metrics_writer.hpp
+ * @class MetricsWriter
  * @brief CSV writer for trades and equity; guarantees chronological order.
  *
  * Files in out_dir:

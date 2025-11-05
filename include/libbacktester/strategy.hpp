@@ -26,7 +26,7 @@ namespace libbacktester {
  *   - `popPendingIntents()` returns **all** newly-due intents since the last pop, in non-decreasing `submit_ts`,
  *     stable for ties, and then **drains** them (no double-emit).
  *
- * @note Use of `std::chrono` is recommended for clarity and type safety with time values.  [oai_citation:2‡Cppreference](https://en.cppreference.com/w/cpp/chrono/duration.html?utm_source=chatgpt.com)
+ * @note Use of `std::chrono` is recommended for clarity and type safety with time values.
  */
 class Strategy {
  public:
