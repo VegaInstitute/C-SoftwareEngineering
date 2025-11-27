@@ -1,13 +1,13 @@
 %module(directors="1") pylibbacktester
 
 %{
-#include <string>
-#include <vector>
+    #include <string>
+    #include <vector>
 
-#include "libbacktester/types.hpp"
-#include "libbacktester/strategy.hpp"
-#include "libbacktester/strategies/strategy_factory.hpp"
-#include "libbacktester/bindings.hpp"
+    #include "libbacktester/types.hpp"
+    #include "libbacktester/strategy.hpp"
+    #include "libbacktester/strategies/strategy_factory.hpp"
+    #include "libbacktester/bindings.hpp"
 %}
 
 /*** Standard SWIG helpers ***/
@@ -15,18 +15,10 @@
 %include "std_vector.i"
 %include "stdint.i"
 
-/*** -------------------------------------------------------------------- */
-/* STL helpers                                                            */
-/* -------------------------------------------------------------------- */
-
 /* Expose std::vector<OrderIntent> to Python as a list-like container. */
 namespace std {
   %template(OrderIntentVector) vector<libbacktester::OrderIntent>;
 }
-
-/*** -------------------------------------------------------------------- */
-/* Ms <-> Python int (milliseconds) for NON-virtual calls                 */
-/* -------------------------------------------------------------------- */
 
 /* Namespace-level alias (if used in public APIs): using Ms = std::chrono::milliseconds; */
 %typemap(in) libbacktester::Ms {
@@ -49,32 +41,7 @@ namespace std {
   $result = PyLong_FromLongLong($1.count());
 }
 
-/* Nested alias inside Strategy: using Ms = std::chrono::milliseconds; */
-%typemap(in) libbacktester::Strategy::Ms {
-  long long ms_val;
-  if (!PyLong_Check($input)) {
-    SWIG_exception_fail(
-        SWIG_TypeError,
-        "Expected integer milliseconds for libbacktester::Strategy::Ms");
-  }
-  ms_val = PyLong_AsLongLong($input);
-  if (PyErr_Occurred()) {
-    SWIG_exception_fail(
-        SWIG_OverflowError,
-        "Milliseconds value out of range for libbacktester::Strategy::Ms");
-  }
-  $1 = libbacktester::Strategy::Ms(ms_val);
-}
-
-%typemap(out) libbacktester::Strategy::Ms {
-  $result = PyLong_FromLongLong($1.count());
-}
-
-/* This is the critical piece:
- * For director calls (C++ virtual -> Python override) on Strategy::Ms,
- * convert to a plain Python int and DO NOT allocate std::chrono::milliseconds*.
- */
-%typemap(directorin) libbacktester::Strategy::Ms {
+%typemap(directorin) libbacktester::Ms {
   $input = PyLong_FromLongLong($1.count());
 }
 

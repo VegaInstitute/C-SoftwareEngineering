@@ -1,7 +1,6 @@
 #ifndef LIBBACKTESTER_STRATEGY_HPP_
 #define LIBBACKTESTER_STRATEGY_HPP_
 
-#include <chrono>
 #include <cstdint>
 #include <vector>
 #include "libbacktester/types.hpp"
@@ -30,8 +29,6 @@ namespace libbacktester {
  */
 class Strategy {
  public:
-  using Ms = std::chrono::milliseconds;
-
   /// Defaulted base constructor (required when deriving with custom ctors).
   Strategy() = default;
 

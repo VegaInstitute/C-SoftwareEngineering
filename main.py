@@ -1,3 +1,5 @@
+import logging
+
 import build.pylibbacktester as lb
 
 
@@ -52,7 +54,7 @@ class MyStrat(lb.Strategy):
 
     def popPendingIntents(self):
         out = list(self._pending)
-        print(f"[MyStrat.popPendingIntents : {self.strategy_id}] {len(out)} intents emitted")
+        logging.info(f"[MyStrat.popPendingIntents : {self.strategy_id}] {len(out)} intents emitted")
         self._pending.clear()
         return out
 
