@@ -38,8 +38,6 @@ class Strategy {
   /// Virtual destructor.
   virtual ~Strategy() = default;
 
-  Strategy(const Strategy&) = delete;
-  Strategy& operator=(const Strategy&) = delete;
   Strategy(Strategy&&) = default;
   Strategy& operator=(Strategy&&) = default;
 
@@ -74,6 +72,10 @@ class Strategy {
    * @note This function may allocate to compose the return vector. Never double-emits.
    */
   virtual std::vector<OrderIntent> popPendingIntents() = 0;
+
+protected:
+   Strategy(const Strategy&) = default;
+   Strategy& operator=(const Strategy&) = default;
 };
 
 }  // namespace libbacktester

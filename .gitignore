@@ -3,11 +3,10 @@
 
 # CMake and libbacktester files
 build/*
+.cache/*
+__cmake_systeminformation/*
 *.o
 *.csv
-
-# clang files
-.cache/*
 
 # Python files
 __pycache__/*

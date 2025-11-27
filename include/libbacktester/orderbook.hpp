@@ -50,6 +50,9 @@ class OrderBookL3 {
   OrderBookL3(OrderBookL3&&) noexcept        = default;
   OrderBookL3& operator=(OrderBookL3&&) noexcept = default;
 
+  /// @brief Instrument ticker this book is tracking (e.g. "KZTRUB_TOM").
+  const std::string& ticker() const noexcept { return ticker_; }
+
   // Process one decoded event. For Action::kTrade, reductions ALWAYS occur.
   // Duplicate trade rows are suppressed for emission only (dedup by trade_id).
   std::optional<Trade> onRecord(const OrderKey& rec,

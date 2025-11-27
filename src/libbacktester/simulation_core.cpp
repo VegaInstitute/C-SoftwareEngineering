@@ -3,6 +3,7 @@
 #include <charconv>
 #include <cstddef>
 #include <fstream>
+#include <iostream>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -218,6 +219,12 @@ OrderBookL3::Side SimulationCore::toSide_(char c) {
 }
 
 void SimulationCore::fireTimerTick_(Ms ts) {
+    book_->forEachLevel(OrderBookL3::Side::kAsk,
+        [](const OrderBookL3::Level& lvl) {
+          std::cerr << "[ASK] px=" << lvl.price
+                    << " qty=" << lvl.agg_qty
+                    << " count=" << lvl.count << "\n";
+        });
   now_ = ts;
   strategy_->onTimer(ts);
 
@@ -262,19 +269,28 @@ void SimulationCore::run(const std::string& csv_path, Ms timer_step) {
     throw std::runtime_error("SimulationCore: CSV missing required MOEX columns.");
   }
 
+  const std::string instrument =
+      (book_ != nullptr) ? book_->ticker() : std::string{};
   std::string seccode_filter;
 
-  // Prime with first accepted row.
   std::optional<MoexRow> cur;
   {
     std::string line;
     while (std::getline(in, line)) {
       auto r = ParseRow(line, c);
       if (!r) continue;
+
       if (!r->seccode.empty()) {
-        if (seccode_filter.empty()) seccode_filter = r->seccode;
-        if (r->seccode != seccode_filter) continue;
+        if (!instrument.empty()) {
+          // Configured instrument: only accept matching SECCODE.
+          if (r->seccode != instrument) continue;
+        } else {
+          // Legacy behaviour: first non-empty SECCODE wins.
+          if (seccode_filter.empty()) seccode_filter = r->seccode;
+          if (r->seccode != seccode_filter) continue;
+        }
       }
+
       cur = std::move(r);
       break;
     }
@@ -291,8 +307,15 @@ void SimulationCore::run(const std::string& csv_path, Ms timer_step) {
     while (std::getline(in, line)) {
       auto r = ParseRow(line, c);
       if (!r) continue;
-      if (!seccode_filter.empty() && !r->seccode.empty() &&
-          r->seccode != seccode_filter) continue;
+
+      if (!r->seccode.empty()) {
+        if (!instrument.empty()) {
+          if (r->seccode != instrument) continue;
+        } else if (!seccode_filter.empty() && r->seccode != seccode_filter) {
+          continue;
+        }
+      }
+
       next = std::move(r);
       break;
     }
@@ -334,8 +357,15 @@ void SimulationCore::run(const std::string& csv_path, Ms timer_step) {
         while (std::getline(in, line)) {
           auto r = ParseRow(line, c);
           if (!r) continue;
-          if (!seccode_filter.empty() && !r->seccode.empty() &&
-              r->seccode != seccode_filter) continue;
+
+          if (!r->seccode.empty()) {
+            if (!instrument.empty()) {
+              if (r->seccode != instrument) continue;
+            } else if (!seccode_filter.empty() && r->seccode != seccode_filter) {
+              continue;
+            }
+          }
+
           next = std::move(r);
           break;
         }
@@ -355,8 +385,15 @@ void SimulationCore::run(const std::string& csv_path, Ms timer_step) {
     while (std::getline(in, line)) {
       auto r = ParseRow(line, c);
       if (!r) continue;
-      if (!seccode_filter.empty() && !r->seccode.empty() &&
-          r->seccode != seccode_filter) continue;
+
+      if (!r->seccode.empty()) {
+        if (!instrument.empty()) {
+          if (r->seccode != instrument) continue;
+        } else if (!seccode_filter.empty() && r->seccode != seccode_filter) {
+          continue;
+        }
+      }
+
       next = std::move(r);
       break;
     }

@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <fstream>
 #include <iomanip>
+#include <iostream>
 #include <stdexcept>
 #include <utility>
 
@@ -51,6 +52,11 @@ MetricsWriter& MetricsWriter::instance() {
 }
 
 void MetricsWriter::recordTrade(const FillEvent& fill) {
+  std::cerr << "[MetricsWriter] recordTrade ts=" << fill.ts.count()
+            << " side=" << (fill.side == OrderSide::kBuy ? "Buy" : "Sell")
+            << " qty=" << fill.qty << " px=" << fill.price
+            << " strategy_id=" << fill.strategy_id << "\n";
+
   std::lock_guard<std::mutex> lock(mtx_);
 
   trades_buf_.push_back(
@@ -66,6 +72,8 @@ void MetricsWriter::recordTrade(const FillEvent& fill) {
 }
 
 void MetricsWriter::recordEquity(Ms ts, double equity) {
+  std::cerr << "[MetricsWriter] recordEquity ts=" << ts.count()
+            << " equity=" << equity << "\n";
   std::lock_guard<std::mutex> lock(mtx_);
 
   equity_buf_.push_back(EquityRec{ts, equity});

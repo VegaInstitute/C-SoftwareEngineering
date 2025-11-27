@@ -3,6 +3,7 @@ project("Software Engineering and C++ for Quantitative Analysis and Algorithmic 
 
 option(BUILD_EXAMPLES "Build example CLI apps" ON)
 option(BUILD_DOCS "Build API docs with Doxygen" ON) # requires Doxygen installation (e.g. `brew install doxygen graphviz` for macOS)
+option(BUILD_PY_SWIG "Build Python module" ON)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -13,6 +14,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_library(libbacktester
     src/libbacktester/orderbook.cpp
 
+    src/libbacktester/strategies/strategy_factory.cpp
     src/libbacktester/strategies/twap_strategy.cpp
 
     src/libbacktester/execution_simulator.cpp
@@ -20,6 +22,8 @@ add_library(libbacktester
     src/libbacktester/portfolio.cpp
 
     src/libbacktester/simulation_core.cpp
+
+    src/libbacktester/bindings.cpp
 )
 target_include_directories(libbacktester PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_compile_options(libbacktester PRIVATE -Wall -Wextra -Wpedantic ${CMAKE_CXX_LOCAL_FLAGS})
@@ -53,6 +57,35 @@ if (BUILD_DOCS)
     )
 endif()
 
+if (BUILD_PY_SWIG)
+    find_package(SWIG REQUIRED)
+    include(UseSWIG)
+    find_package(PythonLibs)
+
+    include_directories(${PYTHON_INCLUDE_DIRS})
+
+    set_source_files_properties(python/pylibbacktester.i PROPERTIES
+        CPLUSPLUS ON
+        SWIG_FLAGS "-directors"
+    )
+
+    swig_add_library(pylibbacktester
+        TYPE MODULE
+        LANGUAGE python
+        SOURCES python/pylibbacktester.i
+    )
+
+    target_link_libraries(pylibbacktester PRIVATE libbacktester ${PYTHON_LIBRARIES})
+    target_include_directories(pylibbacktester PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+    set_property(
+        TARGET pylibbacktester
+        PROPERTY SWIG_USE_TARGET_INCLUDE_DIRECTORIES TRUE
+    )
+
+    set_target_properties(pylibbacktester PROPERTIES
+        LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
+    )
+endif()
 
 include(CTest)
 enable_testing()

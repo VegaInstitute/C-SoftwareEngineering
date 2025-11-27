@@ -1,4 +1,5 @@
 #include <cassert>
+#include <iostream>
 
 #include "libbacktester/metrics_writer.hpp"
 #include "libbacktester/portfolio.hpp"
@@ -44,9 +45,25 @@ void ExecutionSimulator::emitFillAndNotify(const OrderIntent& intent,
 void ExecutionSimulator::submitIntents(std::vector<OrderIntent>&& intents,
                                        Ms ts) {
   for (const auto& oi : intents) {
-    if (oi.qty <= 0) continue;
+    if (oi.qty <= 0) {
+      std::cerr << "[submitIntents] skip qty<=0 at ts=" << ts.count() << "\n";
+      continue;
+    }
     const auto px = topPriceForSide(book_, oi.side);
-    if (!px.has_value()) continue;
+    if (!px.has_value()) {
+      std::cerr << "[submitIntents] NO TOP PRICE side="
+                << (oi.side == OrderSide::kBuy ? "Buy" : "Sell")
+                << " ts=" << ts.count() << "\n";
+      continue;
+    }
+
+    std::cerr << "[submitIntents] FILL side="
+              << (oi.side == OrderSide::kBuy ? "Buy" : "Sell")
+              << " qty=" << oi.qty
+              << " px=" << *px
+              << " ts=" << ts.count()
+              << "\n";
+
     emitFillAndNotify(oi, ts, *px);
   }
 }
