@@ -1,0 +1,26 @@
+cmake_minimum_required(VERSION 3.22)
+project(market_demo LANGUAGES CXX)
+
+option(EXERCISE_MODE "Build the unfinished parser" OFF)
+if(EXERCISE_MODE)
+    set(parser_source src/parse_stub.cpp)
+else()
+    set(parser_source src/parse.cpp)
+endif()
+
+add_library(market_data STATIC ${parser_source})
+target_compile_features(market_data PUBLIC cxx_std_17)
+target_include_directories(market_data PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
+set_target_properties(market_data PROPERTIES CXX_EXTENSIONS OFF)
+
+add_executable(price_app app/main.cpp)
+target_link_libraries(price_app PRIVATE market_data)
+set_target_properties(price_app PROPERTIES CXX_EXTENSIONS OFF)
+
+include(CTest)
+if(BUILD_TESTING)
+    add_executable(parse_test tests/parse_test.cpp)
+    target_link_libraries(parse_test PRIVATE market_data)
+    set_target_properties(parse_test PROPERTIES CXX_EXTENSIONS OFF)
+    add_test(NAME parser_contract COMMAND parse_test)
+endif()
